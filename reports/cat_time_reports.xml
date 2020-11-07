@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- QWeb Reports -->
+        <!-- NAME & FILE_NAME should be the same -->
+
+
+        <report
+            id="action_report_cat_time_csv"
+            model="report.cat_time_report.sales_report"
+            string="Cat Month  Report"
+            report_type="xlsx"
+            name="cat_time_report.sales_report"
+            file="cat_time_report.sales_report"
+            attachment_use="False"
+        />
+    </data>
+</odoo>

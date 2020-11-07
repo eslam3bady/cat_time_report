@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="cat_report_form_wiz" model="ir.ui.view">
+            <field name="name">cat_time.report.wiz</field>
+            <field name="model">cat_time.report.wiz</field>
+            <field name="arch" type="xml">
+                <form string="Report Options">
+                    <!--                          <div class="oe_title">-->
+                    <!--                        <label for="open_cover_id"/>-->
+                    <group>
+
+                        <field name="sorting_type" string="Profit By"/>
+                          <group>
+                            <field name="select_month" required="1" />
+                            <field name="select_month_end"  required="1"/>
+                        </group>
+
+                    </group>
+
+                    <group>
+<!--                        <field name="compute_at_date" widget="radio" />-->
+                        <field name="branches" widget="radio"  />
+                        <field name="categs" widget="radio" />
+                        <field name="vendor" widget="radio" />
+
+                        <!--                    <group>-->
+                        <!--                        <field name="date_from"-->
+                        <!--                               attrs="{'invisible': [('compute_at_date', '=', 0)], 'required': [('compute_at_date', '=', 1)]}"/>-->
+                        <!--                    </group>-->
+                        <!--                    <group>-->
+                        <!--                        <field name="date_to"-->
+                        <!--                               attrs="{'invisible': [('compute_at_date', '=', 0)], 'required': [('compute_at_date', '=', 1)]}"/>-->
+                        <!--                    </group>-->
+                        <!--                            <field name="expect_days_no" string="Expect Days"-->
+                        <!--                                   attrs="{'invisible': [('sorting_type','not in' ,['expect_qty_sale','expect_value_sale'])], 'required': [('sorting_type','in' ,['expect_qty_sale','expect_value_sale'])]}"/>-->
+                        <!--                        </group>-->
+                        <group>
+                            <field name="branch_ids" widget="many2many_tags"
+                                   attrs="{'invisible': [('branches', '!=', 'branch')], 'required': [('branches', '=', 'branch')]}"/>
+                        </group>
+                        <group/>
+                        <group>
+                            <field name="categ_ids" widget="many2many_tags"
+                                   attrs="{'invisible': [('categs', '!=', 'categ')], 'required': [('categs', '=', 'categ')]}"/>
+                        </group>
+                        <group/>
+                        <group>
+                            <field name="vendor_ids" widget="many2many_tags"
+                                   attrs="{'invisible': [('vendor', '!=', 'vendor')], 'required': [('vendor', '=', 'vendor')]}"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <!--                        <button name="view_report_pdf" string="Print PDF" type="object" default_focus="1"-->
+                        <!--                                class="oe_highlight"/>-->
+                        <button name="view_report_xlsx" string="Print Excel" type="object" default_focus="1"
+                                class="oe_highlight" />
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="cat_report_action" model="ir.actions.act_window">
+            <field name="name">Cat Daily Report</field>
+            <field name="res_model">cat_time.report.wiz</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="cat_report_form_wiz"/>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem id="menu_sales_report"
+                  name="Category Sales Daily"
+                  action="cat_report_action"
+                  parent="sale.menu_sale_report"/>
+    </data>
+</odoo>
