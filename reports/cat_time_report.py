@@ -120,31 +120,34 @@ class ProductVariantReport(models.AbstractModel):
                      ('picking_id', 'in', order.order_id.picking_ids.ids)]):
                 sale_qty -= move.product_uom_qty
                 # line_id = order.order_line.filtered(lambda l: l.product_id.id == move.product_id.id)
-                return_sale_amount += (move.product_uom_qty * order.price_unit)
-            sale_in_cost += (sale_qty - return_sale_qty) * order.purchase_price
+                sale_amount -= (move.product_uom_qty * order.price_unit)
+            # sale_in_cost += (sale_qty * order.purchase_price)
 
         for order in self.env['pos.order.line'].search(pos_domain):
             order_count+=1
             sale_qty += order.qty
             # sale_in_cost += (order.qty * order.purchase_price)
             sale_amount += order.price_subtotal_incl
-            for ret in self.env['pos.order.line'].search(
-                    [('order_id.return_ref', '=', order.order_id.pos_reference),
-                     ('product_id', '=', order.product_id.id)]):
-                return_sale_amount += (ret.price_subtotal_incl * -1)
-                # cost_return += ((ret.qty  * order.purchase_price)*-1)
-                sale_qty +=ret.qty
-        ach = sale_amount - return_sale_amount
+            # for ret in self.env['pos.order.line'].search(
+            #         [('order_id.return_ref', '=', order.order_id.pos_reference),
+            #          ('product_id', '=', order.product_id.id)]):
+            #     return_sale_amount += (ret.price_subtotal_incl * -1)
+            #     # cost_return += ((ret.qty  * order.purchase_price)*-1)
+            #     sale_qty +=ret.qty
+        # ach = sale_amount - return_sale_amount
         return {
             'qty_avg': sale_qty/order_count if order_count else 0.0,
-            'value_avg': ach / order_count if order_count else 0.0,
+            'value_avg': sale_amount / order_count if order_count else 0.0,
             'orders':order_count
         }
 
     def _get_exel_report_data(self,data):
         profit_dict={}
         # sales_count_company = 0.0
-        # branches = self._get_warehouse(data['branches'], data['branch_ids'])
+        branches = self._get_warehouse(data['branches'], data['branch_ids'])
+        br_list=[]
+        for branch in branches:
+            br_list.append(branch.lot_stock_id.id)
         cats=self._get_gategory(data['categs'], data['categ_ids'],data['vendor'], data['vendor_ids'])
         fmt = '%m/%d/%Y'
         orders=0
@@ -160,10 +163,12 @@ class ProductVariantReport(models.AbstractModel):
                     for cat in cats[0]:
                             # date=s_date.strftime('%Y-%m-%d')
                             sale_order_domain=[('product_id.categ_id', '=', cat.id),('product_id', 'in', cats[1]),
+                                               ('order_id.warehouse_id', 'in', branches.ids),
                             ('order_id.confirmation_date', '>=', s_date),
                                                ('order_id.confirmation_date', '<=', s_date)
                                                ]
-                            pos_order_domain=[('product_id.categ_id', '=', cat.id),('product_id', 'in', cats[1]), ('order_id.return_ref', '=', False),
+                            pos_order_domain=[('product_id.categ_id', '=', cat.id),('product_id', 'in', cats[1]),
+                                              ('order_id.location_id', 'in', br_list),
                                               ('order_id.date_order', '>=',s_date ),
                                               ('order_id.date_order', '<=', s_date)
                                               ]
@@ -212,9 +217,9 @@ class ProductVariantReport(models.AbstractModel):
                     sheet.merge_range(row_header, 0, row_header + 1, 0, k, format_1_date)
                 else:
                      sheet.write(row_header,0, k, format_1_date)
-                sheet.write(2, len(list(val)) + 1, 'الاجمالى', format_1)
-                sheet.write(2, len(list(val)) + 2, 'عدد الفواتير', format_1)
-                sheet.write(2, len(list(val)) + 3, 'متوسط الفواتير', format_1)
+                sheet.write(2, len(list(val)) + 1, 'الاجمالى', format_2)
+                sheet.write(2, len(list(val)) + 2, 'عدد الفواتير', format_2)
+                sheet.write(2, len(list(val)) + 3, 'متوسط الفواتير', format_2)
                 col_header = 1
                 sum=0.0
                 sum_value=0.0
